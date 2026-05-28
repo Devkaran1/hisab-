@@ -1,0 +1,1118 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Desert Hisab — Gang Expense Tracker</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@300;400;500&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,400&display=swap" rel="stylesheet">
+<style>
+/* ═══════════════════════════════════════════════════
+   THEME TOKENS
+═══════════════════════════════════════════════════ */
+:root[data-theme="light"] {
+  --bg:           #F2EDE4;
+  --bg2:          #E8E2D8;
+  --surface:      #FFFFFF;
+  --surface2:     #F7F3EC;
+  --border:       #D8D2C8;
+  --border2:      #C4BDB2;
+  --text:         #1A1714;
+  --text-muted:   #7A7368;
+  --accent:       #D94F1E;
+  --accent-h:     #BF4118;
+  --green:        #2A6B47;
+  --green-h:      #225939;
+  --blue:         #3455A0;
+  --blue-h:       #2A4488;
+  --purple:       #6E3FA3;
+  --gold:         #B07C10;
+  --shadow-sm:    0 1px 4px rgba(0,0,0,0.07);
+  --shadow:       0 2px 14px rgba(0,0,0,0.09);
+  --shadow-lg:    0 8px 40px rgba(0,0,0,0.13);
+  --grp-bg:       #EBF4EF;
+  --grp-border:   #B8DAC5;
+  --prv-bg:       #FEF3ED;
+  --prv-border:   #F8CEBC;
+  --tab-active:   #1A1714;
+  --tab-inactive: #7A7368;
+}
+:root[data-theme="dark"] {
+  --bg:           #0C0B09;
+  --bg2:          #141210;
+  --surface:      #1A1814;
+  --surface2:     #222018;
+  --border:       #332F28;
+  --border2:      #443F38;
+  --text:         #EDE8DE;
+  --text-muted:   #6A6560;
+  --accent:       #FF6535;
+  --accent-h:     #FF7D52;
+  --green:        #40C070;
+  --green-h:      #55D080;
+  --blue:         #6080E8;
+  --blue-h:       #7090F0;
+  --purple:       #A070E0;
+  --gold:         #DDA020;
+  --shadow-sm:    0 1px 4px rgba(0,0,0,0.4);
+  --shadow:       0 2px 14px rgba(0,0,0,0.45);
+  --shadow-lg:    0 8px 40px rgba(0,0,0,0.6);
+  --grp-bg:       #0D1812;
+  --grp-border:   #1E4030;
+  --prv-bg:       #1A0E09;
+  --prv-border:   #4A2010;
+  --tab-active:   #EDE8DE;
+  --tab-inactive: #6A6560;
+}
+
+/* ═══════════════════════════════════════════════════
+   RESET & BASE
+═══════════════════════════════════════════════════ */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{font-size:15px;-webkit-text-size-adjust:100%}
+body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min-height:100vh;transition:background .3s,color .3s}
+button{cursor:pointer;font-family:inherit}
+input,select,textarea{font-family:inherit}
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:4px}
+
+/* ═══════════════════════════════════════════════════
+   HEADER
+═══════════════════════════════════════════════════ */
+header{
+  position:sticky;top:0;z-index:200;
+  background:var(--surface);border-bottom:1px solid var(--border);
+  height:58px;padding:0 20px;
+  display:flex;align-items:center;justify-content:space-between;
+  box-shadow:var(--shadow-sm);
+}
+.logo{font-family:'Syne',sans-serif;font-weight:800;font-size:1.25rem;letter-spacing:-0.5px;user-select:none}
+.logo em{color:var(--accent);font-style:normal}
+.header-right{display:flex;align-items:center;gap:10px}
+.icon-btn{
+  background:var(--surface2);border:1px solid var(--border);color:var(--text);
+  border-radius:50%;width:36px;height:36px;font-size:1.05rem;
+  display:flex;align-items:center;justify-content:center;
+  transition:background .2s,transform .15s;
+}
+.icon-btn:hover{background:var(--border);transform:scale(1.07)}
+.who-pill{
+  background:var(--accent);color:#fff;border:none;
+  border-radius:22px;padding:6px 14px;
+  font-family:'Syne',sans-serif;font-weight:700;font-size:0.8rem;letter-spacing:.3px;
+  display:flex;align-items:center;gap:6px;
+  transition:opacity .2s,transform .15s;
+}
+.who-pill:hover{opacity:.88;transform:translateY(-1px)}
+.who-dot{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,0.7);display:inline-block}
+
+/* ═══════════════════════════════════════════════════
+   LAYOUT
+═══════════════════════════════════════════════════ */
+.app{max-width:1140px;margin:0 auto;padding:24px 16px 60px}
+
+/* ═══════════════════════════════════════════════════
+   GROUP TABS BAR  (the key feature - separate groups)
+═══════════════════════════════════════════════════ */
+.groups-bar{
+  display:flex;gap:0;align-items:stretch;
+  background:var(--surface2);border:1px solid var(--border);
+  border-radius:14px;padding:4px;margin-bottom:20px;
+  overflow-x:auto;flex-wrap:nowrap;
+}
+.groups-bar::-webkit-scrollbar{height:3px}
+.group-tab{
+  flex-shrink:0;
+  padding:8px 16px;border-radius:10px;border:none;
+  font-family:'Syne',sans-serif;font-weight:600;font-size:0.82rem;
+  letter-spacing:.3px;color:var(--tab-inactive);background:transparent;
+  transition:all .2s;white-space:nowrap;position:relative;
+}
+.group-tab.active{
+  background:var(--surface);color:var(--tab-active);
+  box-shadow:var(--shadow-sm);
+}
+.group-tab .tab-dot{
+  display:inline-block;width:7px;height:7px;border-radius:50%;
+  margin-right:6px;vertical-align:middle;opacity:.7;
+}
+.group-tab.active .tab-dot{opacity:1}
+.tab-add{
+  flex-shrink:0;padding:8px 14px;border-radius:10px;border:none;
+  background:transparent;color:var(--accent);
+  font-family:'Syne',sans-serif;font-weight:700;font-size:1rem;
+  transition:background .2s;
+}
+.tab-add:hover{background:var(--border)}
+
+/* ═══════════════════════════════════════════════════
+   BUTTONS
+═══════════════════════════════════════════════════ */
+.btn{
+  padding:9px 18px;border-radius:10px;border:none;
+  font-family:'Syne',sans-serif;font-weight:700;font-size:0.8rem;letter-spacing:.3px;
+  transition:all .18s;display:inline-flex;align-items:center;gap:6px;
+}
+.btn-primary{background:var(--accent);color:#fff}
+.btn-primary:hover{background:var(--accent-h);transform:translateY(-1px)}
+.btn-green{background:var(--green);color:#fff}
+.btn-green:hover{background:var(--green-h);transform:translateY(-1px)}
+.btn-secondary{background:var(--surface2);color:var(--text);border:1px solid var(--border)}
+.btn-secondary:hover{background:var(--border)}
+.btn-danger{background:#DC2626;color:#fff}
+.btn-danger:hover{background:#B91C1C}
+.btn-sm{padding:6px 12px;font-size:0.75rem}
+.btn-wa{background:#25D366;color:#fff;border:none;border-radius:8px;padding:7px 14px;font-family:'Syne',sans-serif;font-weight:700;font-size:0.78rem;display:inline-flex;align-items:center;gap:5px;cursor:pointer;transition:opacity .2s}
+.btn-wa:hover{opacity:.85}
+
+/* ═══════════════════════════════════════════════════
+   ACTION ROW
+═══════════════════════════════════════════════════ */
+.action-row{display:flex;gap:8px;align-items:center;margin-bottom:20px;flex-wrap:wrap}
+.group-name-display{
+  flex:1;min-width:140px;
+  font-family:'Syne',sans-serif;font-weight:800;font-size:1.15rem;
+  letter-spacing:-0.3px;
+}
+.group-members-display{
+  font-size:0.78rem;color:var(--text-muted);margin-top:2px;
+  font-family:'DM Mono',monospace;
+}
+
+/* ═══════════════════════════════════════════════════
+   STATS
+═══════════════════════════════════════════════════ */
+.stats-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:10px;margin-bottom:20px}
+.stat-card{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:14px;padding:14px 16px;box-shadow:var(--shadow-sm);
+}
+.stat-label{font-size:0.68rem;text-transform:uppercase;letter-spacing:1px;color:var(--text-muted);font-family:'Syne',sans-serif;font-weight:700;margin-bottom:3px}
+.stat-val{font-family:'DM Mono',monospace;font-size:1.45rem;font-weight:500}
+.stat-val.c-accent{color:var(--accent)}
+.stat-val.c-green{color:var(--green)}
+.stat-val.c-blue{color:var(--blue)}
+.stat-val.c-purple{color:var(--purple)}
+
+/* ═══════════════════════════════════════════════════
+   TWO COLUMN LAYOUT
+═══════════════════════════════════════════════════ */
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+@media(max-width:720px){.cols{grid-template-columns:1fr}}
+
+/* ═══════════════════════════════════════════════════
+   SECTION CARDS
+═══════════════════════════════════════════════════ */
+.sec{border-radius:16px;padding:18px;box-shadow:var(--shadow)}
+.sec-group{background:var(--grp-bg);border:1.5px solid var(--grp-border)}
+.sec-private{background:var(--prv-bg);border:1.5px solid var(--prv-border)}
+.sec-title{
+  font-family:'Syne',sans-serif;font-weight:800;font-size:0.98rem;
+  margin-bottom:14px;display:flex;align-items:center;gap:8px;
+}
+.badge{font-size:0.67rem;font-weight:700;padding:3px 8px;border-radius:20px;letter-spacing:.5px}
+.badge-green{background:var(--green);color:#fff}
+.badge-orange{background:var(--accent);color:#fff}
+.badge-blue{background:var(--blue);color:#fff}
+
+/* ═══════════════════════════════════════════════════
+   FORM
+═══════════════════════════════════════════════════ */
+.form-row{display:flex;flex-direction:column;gap:9px}
+.fg{display:flex;flex-direction:column;gap:3px}
+.fg label{font-size:0.68rem;font-family:'Syne',sans-serif;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--text-muted)}
+.fg input,.fg select,.fg textarea{
+  background:var(--surface);border:1.5px solid var(--border);
+  color:var(--text);padding:8px 11px;border-radius:9px;font-size:0.9rem;
+  outline:none;transition:border-color .2s;width:100%;
+}
+.fg input:focus,.fg select:focus,.fg textarea:focus{border-color:var(--accent)}
+.fg textarea{resize:vertical;min-height:56px}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+
+/* ═══════════════════════════════════════════════════
+   EXPENSE LIST
+═══════════════════════════════════════════════════ */
+.exp-list{
+  margin-top:14px;display:flex;flex-direction:column;gap:7px;
+  max-height:320px;overflow-y:auto;padding-right:2px;
+}
+.exp-item{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:11px;padding:11px 13px;
+  display:flex;justify-content:space-between;align-items:flex-start;gap:8px;
+  animation:fadeSlide .2s ease;
+}
+@keyframes fadeSlide{from{opacity:0;transform:translateY(-5px)}to{opacity:1;transform:translateY(0)}}
+.exp-left{flex:1;min-width:0}
+.exp-who{
+  font-family:'Syne',sans-serif;font-weight:700;font-size:0.75rem;
+  color:var(--blue);margin-bottom:2px;
+  display:flex;align-items:center;gap:5px;
+}
+.exp-desc{font-size:0.86rem;line-height:1.4;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.exp-meta{font-size:0.68rem;color:var(--text-muted);font-family:'DM Mono',monospace}
+.exp-right{display:flex;align-items:center;gap:7px;flex-shrink:0}
+.exp-amt{font-family:'DM Mono',monospace;font-size:1rem;font-weight:500;color:var(--accent)}
+.del-btn{
+  background:none;border:none;color:var(--text-muted);
+  font-size:0.9rem;padding:3px 5px;border-radius:5px;
+  transition:color .18s,background .18s;
+}
+.del-btn:hover{color:#DC2626;background:rgba(220,38,38,0.08)}
+.empty-state{text-align:center;padding:26px 0;color:var(--text-muted);font-size:0.86rem}
+.empty-icon{font-size:1.9rem;margin-bottom:6px}
+
+/* ═══════════════════════════════════════════════════
+   PRIVATE LOCK SCREEN
+═══════════════════════════════════════════════════ */
+.lock-screen{
+  display:flex;flex-direction:column;align-items:center;
+  padding:24px 0 10px;gap:9px;
+}
+.lock-icon-big{font-size:2.4rem}
+.lock-text{color:var(--text-muted);font-size:0.82rem;text-align:center;line-height:1.5;max-width:200px}
+.pin-input{
+  width:130px;letter-spacing:8px;text-align:center;
+  font-size:1.3rem;font-family:'DM Mono',monospace;
+  padding:9px;background:var(--surface2);
+  border:1.5px solid var(--border);color:var(--text);
+  border-radius:9px;outline:none;
+}
+.pin-input:focus{border-color:var(--accent)}
+.pin-hint{font-size:0.68rem;color:var(--text-muted)}
+
+/* ═══════════════════════════════════════════════════
+   HISTORY PANEL
+═══════════════════════════════════════════════════ */
+.history-panel{
+  margin-top:20px;background:var(--surface);
+  border:1.5px solid var(--border);border-radius:16px;
+  padding:18px;box-shadow:var(--shadow);
+}
+.history-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
+.history-title{font-family:'Syne',sans-serif;font-weight:800;font-size:1rem}
+.hist-item{
+  background:var(--surface2);border:1px solid var(--border);
+  border-radius:12px;padding:13px 15px;margin-bottom:9px;
+  display:flex;justify-content:space-between;align-items:center;gap:10px;
+  flex-wrap:wrap;
+}
+.hist-name{font-family:'Syne',sans-serif;font-weight:700;font-size:0.9rem}
+.hist-sub{font-size:0.76rem;color:var(--text-muted);margin-top:3px}
+.hist-amt{font-family:'DM Mono',monospace;font-size:1.1rem;color:var(--accent);font-weight:500}
+.hist-actions{display:flex;gap:7px;align-items:center}
+
+/* ═══════════════════════════════════════════════════
+   MODALS
+═══════════════════════════════════════════════════ */
+.overlay{
+  position:fixed;inset:0;background:rgba(0,0,0,.55);
+  z-index:500;display:flex;align-items:center;justify-content:center;
+  opacity:0;pointer-events:none;transition:opacity .25s;
+  padding:16px;
+}
+.overlay.open{opacity:1;pointer-events:all}
+.modal{
+  background:var(--surface);border-radius:20px;padding:26px;
+  width:min(94vw,440px);box-shadow:var(--shadow-lg);
+  transform:scale(.95) translateY(10px);transition:transform .25s;
+  max-height:90vh;overflow-y:auto;
+}
+.overlay.open .modal{transform:scale(1) translateY(0)}
+.modal-title{font-family:'Syne',sans-serif;font-weight:800;font-size:1.08rem;margin-bottom:18px}
+.modal-footer{display:flex;gap:9px;justify-content:flex-end;margin-top:18px;flex-wrap:wrap}
+
+/* ═══════════════════════════════════════════════════
+   USER LIST
+═══════════════════════════════════════════════════ */
+.user-list{display:flex;flex-direction:column;gap:7px;max-height:380px;overflow-y:auto}
+.user-opt{
+  padding:11px 13px;border-radius:11px;cursor:pointer;
+  border:1.5px solid var(--border);background:var(--surface2);
+  display:flex;align-items:center;gap:10px;
+  transition:border-color .18s,background .18s;
+}
+.user-opt:hover,.user-opt.active{border-color:var(--accent);background:var(--surface)}
+.avatar{
+  width:36px;height:36px;border-radius:50%;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+  font-family:'Syne',sans-serif;font-weight:800;font-size:0.88rem;color:#fff;
+}
+.u-name{font-family:'Syne',sans-serif;font-weight:600;font-size:0.88rem;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.u-active{color:var(--accent);font-size:0.75rem;font-family:'Syne',sans-serif;font-weight:700;flex-shrink:0}
+
+/* ═══════════════════════════════════════════════════
+   MEMBER CHECKBOX LIST (for new group)
+═══════════════════════════════════════════════════ */
+.member-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;max-height:280px;overflow-y:auto}
+.member-check{
+  display:flex;align-items:center;gap:8px;
+  padding:8px 10px;border-radius:9px;cursor:pointer;
+  border:1.5px solid var(--border);background:var(--surface2);
+  transition:border-color .18s,background .18s;
+  user-select:none;
+}
+.member-check.checked{border-color:var(--green);background:var(--grp-bg)}
+.member-check input[type=checkbox]{display:none}
+.check-avatar{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-weight:800;font-size:0.75rem;color:#fff;flex-shrink:0}
+.check-name{font-size:0.82rem;font-family:'Syne',sans-serif;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+/* ═══════════════════════════════════════════════════
+   SPLIT ROWS
+═══════════════════════════════════════════════════ */
+.split-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border)}
+.split-row:last-child{border-bottom:none}
+.split-name{font-weight:500;font-size:0.88rem;display:flex;align-items:center;gap:6px}
+.split-amt{font-family:'DM Mono',monospace;font-size:0.9rem}
+
+/* ═══════════════════════════════════════════════════
+   TOAST
+═══════════════════════════════════════════════════ */
+.toast{
+  position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(70px);
+  background:var(--text);color:var(--bg);
+  padding:10px 22px;border-radius:30px;z-index:600;
+  font-family:'Syne',sans-serif;font-weight:700;font-size:0.8rem;letter-spacing:.3px;
+  opacity:0;transition:transform .3s cubic-bezier(.34,1.56,.64,1),opacity .3s;
+  white-space:nowrap;max-width:90vw;
+}
+.toast.show{transform:translateX(-50%) translateY(0);opacity:1}
+
+/* ═══════════════════════════════════════════════════
+   COLOR SYSTEM for avatars  
+═══════════════════════════════════════════════════ */
+.av0{background:#D94F1E}.av1{background:#3455A0}.av2{background:#2A6B47}.av3{background:#6E3FA3}
+.av4{background:#B07C10}.av5{background:#C23860}.av6{background:#1A7A8A}.av7{background:#4A6920}
+.av8{background:#8A3A1A}.av9{background:#2A5080}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header>
+  <div class="logo">Desert<em>Hisab</em></div>
+  <div class="header-right">
+    <button class="icon-btn" id="themeBtn" title="Toggle dark/light">🌙</button>
+    <button class="who-pill" id="userPillBtn">
+      <span class="who-dot" id="headerDot"></span>
+      <span id="headerUser">DEVKARAN</span> ▾
+    </button>
+  </div>
+</header>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<!-- APP -->
+<div class="app">
+
+  <!-- GROUP TABS -->
+  <div class="groups-bar" id="groupsBar">
+    <!-- tabs injected by JS -->
+    <button class="tab-add" id="tabAddBtn" title="New group / trip">＋</button>
+  </div>
+
+  <!-- ACTIVE GROUP HEADER + ACTIONS -->
+  <div class="action-row">
+    <div>
+      <div class="group-name-display" id="grpNameDisplay">—</div>
+      <div class="group-members-display" id="grpMembersDisplay"></div>
+    </div>
+    <button class="btn btn-secondary btn-sm" id="splitBtn">⚖ Split</button>
+    <button class="btn btn-secondary btn-sm" id="historyBtn">📋 History</button>
+    <button class="btn btn-danger btn-sm" id="deleteGrpBtn">🗑 Delete</button>
+  </div>
+
+  <!-- STATS -->
+  <div class="stats-row">
+    <div class="stat-card"><div class="stat-label">Group Total</div><div class="stat-val c-accent" id="sTotal">₹0</div></div>
+    <div class="stat-card"><div class="stat-label">My Paid</div><div class="stat-val c-blue" id="sMyPaid">₹0</div></div>
+    <div class="stat-card"><div class="stat-label">My Balance</div><div class="stat-val c-green" id="sBalance">₹0</div></div>
+    <div class="stat-card"><div class="stat-label">Private (me)</div><div class="stat-val c-purple" id="sPrivate">₹0</div></div>
+  </div>
+
+  <!-- EXPENSE COLUMNS -->
+  <div class="cols">
+
+    <!-- ── GROUP EXPENSES ── -->
+    <div class="sec sec-group">
+      <div class="sec-title">🏕 Group Expenses <span class="badge badge-green">SHARED</span></div>
+      <div class="form-row">
+        <div class="fg">
+          <label>Adding as</label>
+          <input type="text" id="gUser" readonly style="opacity:.72;background:var(--surface2)">
+        </div>
+        <div class="row2">
+          <div class="fg">
+            <label>Amount (₹)</label>
+            <input type="number" id="gAmt" placeholder="0" min="0">
+          </div>
+          <div class="fg">
+            <label>Category</label>
+            <select id="gCat">
+              <option>🍽 Food</option><option>🚗 Travel</option><option>🏨 Stay</option>
+              <option>⛽ Fuel</option><option>🎡 Fun</option><option>🛒 Shopping</option>
+              <option>💊 Medical</option><option>🍺 Drinks</option><option>📦 Other</option>
+            </select>
+          </div>
+        </div>
+        <div class="fg">
+          <label>Description</label>
+          <input type="text" id="gDesc" placeholder="Hotel, lunch, petrol...">
+        </div>
+        <button class="btn btn-green" id="addGrpBtn">＋ Add Group Expense</button>
+      </div>
+      <div class="exp-list" id="grpList"></div>
+    </div>
+
+    <!-- ── PRIVATE EXPENSES ── -->
+    <div class="sec sec-private">
+      <div class="sec-title">🔒 Private Expenses <span class="badge badge-orange">ONLY YOU</span></div>
+
+      <!-- Lock screen -->
+      <div id="lockScreen">
+        <div class="lock-screen">
+          <div class="lock-icon-big">🔐</div>
+          <div class="lock-text">Enter your 4-digit PIN to access private expenses. Only you can see these.</div>
+          <input class="pin-input" type="password" id="pinInput" maxlength="4" placeholder="••••">
+          <button class="btn btn-primary" id="unlockBtn">Unlock</button>
+          <div class="pin-hint">Default PIN: <strong>1234</strong></div>
+        </div>
+      </div>
+
+      <!-- Unlocked content -->
+      <div id="privateContent" style="display:none">
+        <div class="form-row">
+          <div class="row2">
+            <div class="fg">
+              <label>Amount (₹)</label>
+              <input type="number" id="pAmt" placeholder="0" min="0">
+            </div>
+            <div class="fg">
+              <label>Category</label>
+              <select id="pCat">
+                <option>🍽 Food</option><option>🚗 Travel</option><option>🏨 Stay</option>
+                <option>⛽ Fuel</option><option>🎡 Fun</option><option>🛒 Shopping</option>
+                <option>💊 Medical</option><option>🍺 Drinks</option><option>📦 Other</option>
+              </select>
+            </div>
+          </div>
+          <div class="fg">
+            <label>Description</label>
+            <input type="text" id="pDesc" placeholder="Personal expense...">
+          </div>
+          <button class="btn btn-primary" id="addPrvBtn">＋ Add Private Expense</button>
+        </div>
+        <div class="exp-list" id="prvList"></div>
+        <div style="text-align:right;margin-top:10px">
+          <button class="btn btn-secondary btn-sm" id="lockBtn">🔒 Lock vault</button>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /cols -->
+
+  <!-- HISTORY PANEL -->
+  <div class="history-panel" id="histPanel" style="display:none">
+    <div class="history-header">
+      <div class="history-title">📋 All Groups — Expense History</div>
+      <button class="btn btn-secondary btn-sm" id="closeHistBtn">✕ Close</button>
+    </div>
+    <div id="histList"></div>
+  </div>
+
+</div><!-- /app -->
+
+<!-- ═══════ MODAL: New Group ═══════ -->
+<div class="overlay" id="newGrpModal">
+  <div class="modal">
+    <div class="modal-title">🆕 Create New Group / Trip</div>
+    <div class="form-row" style="margin-bottom:0">
+      <div class="fg">
+        <label>Group / Trip Name</label>
+        <input type="text" id="ngName" placeholder="Goa Trip, Flat Rent, Trek...">
+      </div>
+      <div class="fg">
+        <label>Select Members</label>
+        <div class="member-grid" id="memberGrid"></div>
+      </div>
+      <div class="fg" style="margin-top:4px">
+        <label>Or add new member name</label>
+        <div style="display:flex;gap:8px">
+          <input type="text" id="newMemberInput" placeholder="Name..." style="flex:1">
+          <button class="btn btn-secondary btn-sm" id="addMemberInline">Add</button>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" id="cancelGrpBtn">Cancel</button>
+      <button class="btn btn-primary" id="confirmGrpBtn">Create Group</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════ MODAL: User Switch ═══════ -->
+<div class="overlay" id="userModal">
+  <div class="modal">
+    <div class="modal-title">👥 Who Are You?</div>
+    <div class="user-list" id="userModalList"></div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" id="closeUserBtn">Close</button>
+      <button class="btn btn-primary" id="addGlobalUserBtn">＋ New User</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════ MODAL: Split Summary ═══════ -->
+<div class="overlay" id="splitModal">
+  <div class="modal">
+    <div class="modal-title">⚖️ Split Summary</div>
+    <div id="splitBody"></div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" id="closeSplitBtn">Close</button>
+      <button class="btn-wa" id="shareSplitBtn">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.126.553 4.122 1.523 5.857L.057 24l6.294-1.652A11.954 11.954 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818a9.8 9.8 0 01-5.006-1.373l-.358-.213-3.722.977.993-3.63-.234-.371A9.775 9.775 0 012.182 12C2.182 6.58 6.58 2.182 12 2.182 17.42 2.182 21.818 6.58 21.818 12c0 5.42-4.398 9.818-9.818 9.818z"/></svg>
+        Share WhatsApp
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════ MODAL: Confirm Delete ═══════ -->
+<div class="overlay" id="deleteModal">
+  <div class="modal">
+    <div class="modal-title">🗑 Delete Group?</div>
+    <p style="color:var(--text-muted);font-size:0.9rem;line-height:1.6">This will permanently delete the group and all its expenses. This cannot be undone.</p>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" id="cancelDeleteBtn">Cancel</button>
+      <button class="btn btn-danger" id="confirmDeleteBtn">Yes, Delete</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ═══════════════════════════════════════════════════════════
+   DATA
+═══════════════════════════════════════════════════════════ */
+
+const DEFAULT_USERS = [
+  'Devkaran','Ajay','Narendra','Mukesh',
+  'Amit','Harshit','Ashutosh',
+  'Harshwardhan','Deepak','Aman'
+];
+
+const AV_COLORS = ['av0','av1','av2','av3','av4','av5','av6','av7','av8','av9'];
+const TAB_COLORS = ['#D94F1E','#3455A0','#2A6B47','#6E3FA3','#B07C10','#C23860','#1A7A8A','#4A6920','#8A3A1A','#2A5080'];
+
+/* ── State ── */
+let S = {
+  users: [...DEFAULT_USERS],          // global user pool
+  currentUser: DEFAULT_USERS[0],
+  currentGroup: null,                 // key of active group
+  groups: {},                         // { groupKey: { name, members[], entries[], private:{user:[]} } }
+  privateUnlocked: {},                // { groupKey_user: true }
+  pins: {},                           // { user: '1234' }
+  theme: 'light'
+};
+
+/* ── Persistence ── */
+function save() {
+  try { localStorage.setItem('ss_v4', JSON.stringify(S)); } catch(e){}
+}
+function load() {
+  try {
+    // clear any old version data
+    ['ss_v1','ss_v2','ss_v3'].forEach(k => { try{localStorage.removeItem(k)}catch(e){} });
+    const raw = localStorage.getItem('ss_v4');
+    if (!raw) return;
+    const p = JSON.parse(raw);
+    // keep DEFAULT_USERS always, plus any new custom users added by the group
+    const customUsers = (p.users||[]).filter(u => !DEFAULT_USERS.includes(u));
+    p.users = [...DEFAULT_USERS, ...customUsers];
+    // if saved currentUser is not in new list, reset to first
+    if (!p.users.includes(p.currentUser)) p.currentUser = DEFAULT_USERS[0];
+    Object.assign(S, p);
+  } catch(e){}
+}
+
+/* ── Helpers ── */
+function fmt(n){ return '₹' + Number(n||0).toLocaleString('en-IN'); }
+function uid(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,5); }
+function today(){ return new Date().toISOString().slice(0,10); }
+function avClass(name){ const i = S.users.indexOf(name); return AV_COLORS[(i>=0?i:0) % AV_COLORS.length]; }
+function tabColor(i){ return TAB_COLORS[i % TAB_COLORS.length]; }
+function initials(name){ return (name||'?').trim().split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2); }
+
+function showToast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  clearTimeout(t._tid);
+  t._tid = setTimeout(()=>t.classList.remove('show'), 2300);
+}
+function openModal(id){ document.getElementById(id).classList.add('open'); }
+function closeModal(id){ document.getElementById(id).classList.remove('open'); }
+
+/* ═══════════════════════════════════════════════════════════
+   BOOT
+═══════════════════════════════════════════════════════════ */
+load();
+// ensure at least one group
+if (!Object.keys(S.groups).length) {
+  const k = uid();
+  S.groups[k] = {
+    name: 'Goa Trip 2025',
+    members: DEFAULT_USERS.slice(0,6),
+    entries: [],
+    private: {}
+  };
+  S.currentGroup = k;
+}
+if (!S.currentGroup || !S.groups[S.currentGroup]) {
+  S.currentGroup = Object.keys(S.groups)[0];
+}
+document.documentElement.setAttribute('data-theme', S.theme||'light');
+document.getElementById('themeBtn').textContent = (S.theme==='dark') ? '☀️' : '🌙';
+
+syncHeaderUser();
+renderTabs();
+renderAll();
+
+/* ═══════════════════════════════════════════════════════════
+   TABS
+═══════════════════════════════════════════════════════════ */
+function renderTabs(){
+  const bar = document.getElementById('groupsBar');
+  const addBtn = document.getElementById('tabAddBtn');
+  // remove old tabs
+  bar.querySelectorAll('.group-tab').forEach(t=>t.remove());
+
+  Object.entries(S.groups).forEach(([k,g], i) => {
+    const btn = document.createElement('button');
+    btn.className = 'group-tab' + (k===S.currentGroup?' active':'');
+    btn.innerHTML = `<span class="tab-dot" style="background:${tabColor(i)}"></span>${g.name}`;
+    btn.addEventListener('click', ()=>{ switchGroup(k); });
+    bar.insertBefore(btn, addBtn);
+  });
+}
+
+function switchGroup(k){
+  if (k === S.currentGroup) return;
+  S.currentGroup = k;
+  S.privateUnlocked = {};
+  lockPrivate();
+  save(); renderTabs(); renderAll();
+}
+
+/* ═══════════════════════════════════════════════════════════
+   RENDER ALL
+═══════════════════════════════════════════════════════════ */
+function renderAll(){
+  const grp = S.groups[S.currentGroup];
+  if (!grp) return;
+
+  // header info
+  document.getElementById('grpNameDisplay').textContent = grp.name;
+  document.getElementById('grpMembersDisplay').textContent = '👥 ' + grp.members.join(' · ');
+  document.getElementById('gUser').value = S.currentUser;
+
+  // stats
+  const total = grp.entries.reduce((s,e)=>s+Number(e.amt),0);
+  const myPaid = grp.entries.filter(e=>e.user===S.currentUser).reduce((s,e)=>s+Number(e.amt),0);
+  const membCount = grp.members.length || 1;
+  const share = total / membCount;
+  const balance = myPaid - share;
+  const myPriv = (grp.private[S.currentUser]||[]).reduce((s,e)=>s+Number(e.amt),0);
+
+  document.getElementById('sTotal').textContent = fmt(total);
+  document.getElementById('sMyPaid').textContent = fmt(myPaid);
+  document.getElementById('sBalance').textContent = (balance>=0?'+':'')+fmt(Math.round(balance));
+  document.getElementById('sPrivate').textContent = fmt(myPriv);
+  document.getElementById('sBalance').style.color = balance>=0?'var(--green)':'var(--accent)';
+
+  renderGrpList(grp.entries);
+  if (S.privateUnlocked[pvKey()]) {
+    renderPrvList(grp.private[S.currentUser]||[]);
+  }
+}
+
+function pvKey(){ return S.currentGroup+'_'+S.currentUser; }
+
+/* ── Group list ── */
+function renderGrpList(entries){
+  const el = document.getElementById('grpList');
+  if (!entries.length){
+    el.innerHTML = '<div class="empty-state"><div class="empty-icon">🧾</div>No expenses yet — add the first one!</div>';
+    return;
+  }
+  el.innerHTML = entries.slice().reverse().map(e=>`
+    <div class="exp-item">
+      <div class="exp-left">
+        <div class="exp-who">
+          <span class="avatar ${avClass(e.user)}" style="width:20px;height:20px;font-size:0.6rem">${initials(e.user)}</span>
+          ${e.user} &nbsp;·&nbsp; ${e.cat}
+        </div>
+        <div class="exp-desc" title="${e.desc}">${e.desc}</div>
+        <div class="exp-meta">${e.date}</div>
+      </div>
+      <div class="exp-right">
+        <div class="exp-amt">${fmt(e.amt)}</div>
+        ${e.user===S.currentUser?`<button class="del-btn" onclick="delGrp('${e.id}')">✕</button>`:''}
+      </div>
+    </div>`).join('');
+}
+
+/* ── Private list ── */
+function renderPrvList(entries){
+  const el = document.getElementById('prvList');
+  if (!entries.length){
+    el.innerHTML = '<div class="empty-state"><div class="empty-icon">🔒</div>No private expenses yet</div>';
+    return;
+  }
+  el.innerHTML = entries.slice().reverse().map(e=>`
+    <div class="exp-item">
+      <div class="exp-left">
+        <div class="exp-who">${e.cat}</div>
+        <div class="exp-desc" title="${e.desc}">${e.desc}</div>
+        <div class="exp-meta">${e.date}</div>
+      </div>
+      <div class="exp-right">
+        <div class="exp-amt">${fmt(e.amt)}</div>
+        <button class="del-btn" onclick="delPrv('${e.id}')">✕</button>
+      </div>
+    </div>`).join('');
+}
+
+/* ═══════════════════════════════════════════════════════════
+   ADD EXPENSES
+═══════════════════════════════════════════════════════════ */
+document.getElementById('addGrpBtn').addEventListener('click', ()=>{
+  const amt = parseFloat(document.getElementById('gAmt').value);
+  const desc = document.getElementById('gDesc').value.trim();
+  if (!amt||amt<=0){ showToast('⚠ Enter a valid amount'); return; }
+  if (!desc){ showToast('⚠ Enter a description'); return; }
+  const grp = S.groups[S.currentGroup];
+  if (!grp.members.includes(S.currentUser)){
+    showToast('⚠ You are not a member of this group!'); return;
+  }
+  grp.entries.push({ id:uid(), user:S.currentUser, amt, desc, cat:document.getElementById('gCat').value, date:today() });
+  document.getElementById('gAmt').value='';
+  document.getElementById('gDesc').value='';
+  save(); renderAll(); showToast('Group expense added ✓');
+});
+
+document.getElementById('addPrvBtn').addEventListener('click', ()=>{
+  const amt = parseFloat(document.getElementById('pAmt').value);
+  const desc = document.getElementById('pDesc').value.trim();
+  if (!amt||amt<=0){ showToast('⚠ Enter a valid amount'); return; }
+  if (!desc){ showToast('⚠ Enter a description'); return; }
+  const grp = S.groups[S.currentGroup];
+  if (!grp.private[S.currentUser]) grp.private[S.currentUser]=[];
+  grp.private[S.currentUser].push({ id:uid(), amt, desc, cat:document.getElementById('pCat').value, date:today() });
+  document.getElementById('pAmt').value='';
+  document.getElementById('pDesc').value='';
+  save(); renderAll(); showToast('Private expense added 🔒');
+});
+
+/* ═══════════════════════════════════════════════════════════
+   DELETE
+═══════════════════════════════════════════════════════════ */
+window.delGrp = function(id){
+  S.groups[S.currentGroup].entries = S.groups[S.currentGroup].entries.filter(e=>e.id!==id);
+  save(); renderAll(); showToast('Deleted');
+};
+window.delPrv = function(id){
+  const u = S.currentUser;
+  const grp = S.groups[S.currentGroup];
+  if (grp.private[u]) grp.private[u] = grp.private[u].filter(e=>e.id!==id);
+  save(); renderAll(); showToast('Deleted');
+};
+
+/* ═══════════════════════════════════════════════════════════
+   PRIVATE PIN
+═══════════════════════════════════════════════════════════ */
+document.getElementById('unlockBtn').addEventListener('click', ()=>{
+  const pin = document.getElementById('pinInput').value;
+  const correctPin = S.pins[S.currentUser] || '1234';
+  if (pin === correctPin){
+    S.privateUnlocked[pvKey()] = true;
+    document.getElementById('lockScreen').style.display='none';
+    document.getElementById('privateContent').style.display='block';
+    renderPrvList(S.groups[S.currentGroup].private[S.currentUser]||[]);
+    showToast('Private vault unlocked 🔓');
+  } else {
+    showToast('Wrong PIN ✗');
+    document.getElementById('pinInput').value='';
+  }
+});
+document.getElementById('pinInput').addEventListener('keydown', e=>{ if(e.key==='Enter') document.getElementById('unlockBtn').click(); });
+
+document.getElementById('lockBtn').addEventListener('click', lockPrivate);
+function lockPrivate(){
+  delete S.privateUnlocked[pvKey()];
+  document.getElementById('pinInput').value='';
+  document.getElementById('lockScreen').style.display='block';
+  document.getElementById('privateContent').style.display='none';
+  if (document.getElementById('lockBtn')) showToast('Vault locked 🔒');
+}
+
+/* ═══════════════════════════════════════════════════════════
+   NEW GROUP MODAL
+═══════════════════════════════════════════════════════════ */
+// track extra members added inline during modal session
+let modalExtraUsers = [];
+
+document.getElementById('tabAddBtn').addEventListener('click', ()=>{
+  modalExtraUsers = [];
+  buildMemberGrid(S.users);
+  document.getElementById('ngName').value='';
+  document.getElementById('newMemberInput').value='';
+  openModal('newGrpModal');
+});
+document.getElementById('cancelGrpBtn').addEventListener('click', ()=>closeModal('newGrpModal'));
+
+document.getElementById('addMemberInline').addEventListener('click', ()=>{
+  const nm = document.getElementById('newMemberInput').value.trim();
+  if (!nm){ showToast('Enter a name'); return; }
+  if (!S.users.includes(nm)) S.users.push(nm);
+  if (!modalExtraUsers.includes(nm)) modalExtraUsers.push(nm);
+  document.getElementById('newMemberInput').value='';
+  buildMemberGrid(S.users);
+  // auto-check the newly added
+  setTimeout(()=>{
+    const cb = document.querySelector(`.member-check[data-name="${CSS.escape(nm)}"]`);
+    if (cb && !cb.classList.contains('checked')) cb.click();
+  },50);
+  showToast(`${nm} added`);
+});
+
+function buildMemberGrid(users){
+  const grid = document.getElementById('memberGrid');
+  grid.innerHTML = users.map((u,i)=>`
+    <label class="member-check" data-name="${u}">
+      <input type="checkbox" value="${u}">
+      <div class="check-avatar ${AV_COLORS[i%AV_COLORS.length]}">${initials(u)}</div>
+      <span class="check-name" title="${u}">${u}</span>
+    </label>`).join('');
+
+  grid.querySelectorAll('.member-check').forEach(lbl=>{
+    const cb = lbl.querySelector('input');
+    // auto-check current user
+    if (lbl.dataset.name === S.currentUser){ cb.checked=true; lbl.classList.add('checked'); }
+    lbl.addEventListener('click', ()=>{
+      cb.checked = !cb.checked;
+      lbl.classList.toggle('checked', cb.checked);
+    });
+  });
+}
+
+document.getElementById('confirmGrpBtn').addEventListener('click', ()=>{
+  const name = document.getElementById('ngName').value.trim();
+  if (!name){ showToast('Enter a group name'); return; }
+  const selected = [...document.getElementById('memberGrid').querySelectorAll('input:checked')].map(i=>i.value);
+  if (!selected.length){ showToast('Select at least one member'); return; }
+  if (!selected.includes(S.currentUser)) selected.unshift(S.currentUser);
+
+  const k = uid();
+  S.groups[k] = { name, members:selected, entries:[], private:{} };
+  S.currentGroup = k;
+  // add any new users to global pool
+  modalExtraUsers.forEach(u=>{ if(!S.users.includes(u)) S.users.push(u); });
+  closeModal('newGrpModal');
+  lockPrivate();
+  save(); renderTabs(); renderAll();
+  showToast(`"${name}" created ✓`);
+});
+
+/* ═══════════════════════════════════════════════════════════
+   USER MODAL
+═══════════════════════════════════════════════════════════ */
+function syncHeaderUser(){
+  document.getElementById('headerUser').textContent = S.currentUser;
+  document.getElementById('gUser').value = S.currentUser;
+  // update dot color
+  const i = S.users.indexOf(S.currentUser);
+  const colors = ['#D94F1E','#3455A0','#2A6B47','#6E3FA3','#B07C10','#C23860','#1A7A8A','#4A6920','#8A3A1A','#2A5080'];
+  document.getElementById('headerDot').style.background = colors[(i>=0?i:0)%colors.length];
+}
+
+document.getElementById('userPillBtn').addEventListener('click', ()=>{
+  buildUserModal();
+  openModal('userModal');
+});
+document.getElementById('closeUserBtn').addEventListener('click', ()=>closeModal('userModal'));
+
+document.getElementById('addGlobalUserBtn').addEventListener('click', ()=>{
+  const nm = prompt('Enter new user name:');
+  if (!nm||!nm.trim()) return;
+  const name = nm.trim();
+  if (!S.users.includes(name)) S.users.push(name);
+  S.currentUser = name;
+  lockPrivate();
+  syncHeaderUser();
+  save(); renderAll(); buildUserModal();
+  showToast(`Switched to ${name}`);
+});
+
+function buildUserModal(){
+  const el = document.getElementById('userModalList');
+  el.innerHTML = S.users.map((u,i)=>`
+    <div class="user-opt ${u===S.currentUser?'active':''}" onclick="switchUser('${u.replace(/'/g,"\\'")}')">
+      <div class="avatar ${AV_COLORS[i%AV_COLORS.length]}">${initials(u)}</div>
+      <div class="u-name" title="${u}">${u}</div>
+      ${u===S.currentUser?'<span class="u-active">● Active</span>':''}
+    </div>`).join('');
+}
+
+window.switchUser = function(name){
+  S.currentUser = name;
+  lockPrivate();
+  syncHeaderUser();
+  closeModal('userModal');
+  save(); renderAll();
+  showToast(`You are now ${name}`);
+};
+
+/* ═══════════════════════════════════════════════════════════
+   DELETE GROUP
+═══════════════════════════════════════════════════════════ */
+document.getElementById('deleteGrpBtn').addEventListener('click', ()=>openModal('deleteModal'));
+document.getElementById('cancelDeleteBtn').addEventListener('click', ()=>closeModal('deleteModal'));
+document.getElementById('confirmDeleteBtn').addEventListener('click', ()=>{
+  const keys = Object.keys(S.groups);
+  if (keys.length <= 1){ showToast("Can't delete the only group"); closeModal('deleteModal'); return; }
+  const name = S.groups[S.currentGroup].name;
+  delete S.groups[S.currentGroup];
+  S.currentGroup = Object.keys(S.groups)[0];
+  closeModal('deleteModal');
+  lockPrivate();
+  save(); renderTabs(); renderAll();
+  showToast(`"${name}" deleted`);
+});
+
+/* ═══════════════════════════════════════════════════════════
+   SPLIT
+═══════════════════════════════════════════════════════════ */
+document.getElementById('splitBtn').addEventListener('click', ()=>{
+  const grp = S.groups[S.currentGroup];
+  const total = grp.entries.reduce((s,e)=>s+Number(e.amt),0);
+  const n = grp.members.length||1;
+  const perPerson = total/n;
+
+  const paid = {};
+  grp.members.forEach(m=>paid[m]=0);
+  grp.entries.forEach(e=>{ paid[e.user]=(paid[e.user]||0)+Number(e.amt); });
+
+  let html = `<div style="font-family:'DM Mono',monospace;font-size:0.8rem;color:var(--text-muted);margin-bottom:12px">
+    Total: ${fmt(total)} &nbsp;·&nbsp; ${n} members &nbsp;·&nbsp; Per head: ${fmt(Math.round(perPerson))}
+  </div>`;
+  grp.members.forEach((m,i)=>{
+    const p = paid[m]||0;
+    const bal = p - perPerson;
+    const color = bal>=0?'var(--green)':'var(--accent)';
+    const label = bal>=0?`✅ gets back ${fmt(Math.round(bal))}`:`❗ owes ${fmt(Math.round(Math.abs(bal)))}`;
+    html += `<div class="split-row">
+      <span class="split-name">
+        <span class="avatar ${AV_COLORS[i%AV_COLORS.length]}" style="width:24px;height:24px;font-size:0.65rem">${initials(m)}</span>
+        ${m}
+      </span>
+      <span class="split-amt" style="color:${color}">${label}</span>
+    </div>`;
+  });
+  document.getElementById('splitBody').innerHTML = html;
+  openModal('splitModal');
+});
+document.getElementById('closeSplitBtn').addEventListener('click', ()=>closeModal('splitModal'));
+document.getElementById('shareSplitBtn').addEventListener('click', ()=>{
+  shareGroupWA(S.currentGroup); closeModal('splitModal');
+});
+
+/* ═══════════════════════════════════════════════════════════
+   HISTORY
+═══════════════════════════════════════════════════════════ */
+document.getElementById('historyBtn').addEventListener('click', ()=>{
+  const p = document.getElementById('histPanel');
+  const visible = p.style.display!=='none';
+  p.style.display = visible?'none':'block';
+  if (!visible) renderHistory();
+});
+document.getElementById('closeHistBtn').addEventListener('click', ()=>{
+  document.getElementById('histPanel').style.display='none';
+});
+
+function renderHistory(){
+  const el = document.getElementById('histList');
+  const keys = Object.keys(S.groups);
+  if (!keys.length){ el.innerHTML='<div class="empty-state">No groups yet</div>'; return; }
+  el.innerHTML = keys.map((k,i)=>{
+    const g = S.groups[k];
+    const total = g.entries.reduce((s,e)=>s+Number(e.amt),0);
+    const n = g.members.length;
+    return `<div class="hist-item">
+      <div>
+        <div class="hist-name" style="color:${tabColor(i)}">▸ ${g.name}</div>
+        <div class="hist-sub">${n} members · ${g.entries.length} entries · ${g.members.slice(0,3).join(', ')}${n>3?` +${n-3} more`:''}</div>
+      </div>
+      <div class="hist-actions">
+        <div class="hist-amt">${fmt(total)}</div>
+        <button class="btn-wa" onclick="shareGroupWA('${k}')">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.126.553 4.122 1.523 5.857L.057 24l6.294-1.652A11.954 11.954 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818a9.8 9.8 0 01-5.006-1.373l-.358-.213-3.722.977.993-3.63-.234-.371A9.775 9.775 0 012.182 12C2.182 6.58 6.58 2.182 12 2.182 17.42 2.182 21.818 6.58 21.818 12c0 5.42-4.398 9.818-9.818 9.818z"/></svg>
+          Share
+        </button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+/* ═══════════════════════════════════════════════════════════
+   WHATSAPP SHARE
+═══════════════════════════════════════════════════════════ */
+window.shareGroupWA = function(k){
+  const g = S.groups[k];
+  const total = g.entries.reduce((s,e)=>s+Number(e.amt),0);
+  const n = g.members.length||1;
+  const per = Math.round(total/n);
+  const paid = {};
+  g.members.forEach(m=>paid[m]=0);
+  g.entries.forEach(e=>{ paid[e.user]=(paid[e.user]||0)+Number(e.amt); });
+
+  let txt = `💰 *SplitSafe — ${g.name}*\n`;
+  txt += `👥 Members (${n}): ${g.members.join(', ')}\n\n`;
+  txt += `📋 *Expense Log:*\n`;
+  g.entries.forEach(e=>{ txt += `• ${e.user}: ${fmt(e.amt)} — ${e.desc} [${e.cat}]\n`; });
+  txt += `\n💵 *Grand Total: ${fmt(total)}*\n`;
+  txt += `👤 *Per Person: ${fmt(per)}*\n\n`;
+  txt += `📊 *Who owes / gets back:*\n`;
+  g.members.forEach(m=>{
+    const bal = (paid[m]||0) - per;
+    txt += bal>=0 ? `✅ ${m}: gets back ${fmt(Math.round(bal))}\n` : `❗ ${m}: owes ${fmt(Math.round(Math.abs(bal)))}\n`;
+  });
+  txt += `\n_Shared via Desert Hisab_`;
+  window.open(`https://wa.me/?text=${encodeURIComponent(txt)}`, '_blank');
+};
+
+/* ═══════════════════════════════════════════════════════════
+   THEME
+═══════════════════════════════════════════════════════════ */
+document.getElementById('themeBtn').addEventListener('click', ()=>{
+  const dark = document.documentElement.getAttribute('data-theme')==='dark';
+  const next = dark?'light':'dark';
+  document.documentElement.setAttribute('data-theme', next);
+  document.getElementById('themeBtn').textContent = next==='dark'?'☀️':'🌙';
+  S.theme = next; save();
+});
+
+/* ═══════════════════════════════════════════════════════════
+   CLOSE MODALS ON OVERLAY CLICK
+═══════════════════════════════════════════════════════════ */
+document.querySelectorAll('.overlay').forEach(o=>{
+  o.addEventListener('click', e=>{ if(e.target===o) o.classList.remove('open'); });
+});
+
+/* ── Enter key shortcuts ── */
+document.getElementById('gDesc').addEventListener('keydown', e=>{ if(e.key==='Enter') document.getElementById('addGrpBtn').click(); });
+document.getElementById('pDesc').addEventListener('keydown', e=>{ if(e.key==='Enter') document.getElementById('addPrvBtn').click(); });
+document.getElementById('ngName').addEventListener('keydown', e=>{ if(e.key==='Enter') document.getElementById('confirmGrpBtn').click(); });
+</script>
+</body>
+</html>
